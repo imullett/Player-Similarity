@@ -1,9 +1,11 @@
 const express = require('express')
-const bodyParser = require('body-parser')
 const { players, stats, sequelize } = require('./models')
+const cors = require('cors')
 
 const app = express()
-app.use(bodyParser.json())
+
+players.hasMany(stats, { foreignKey: 'id' })
+stats.belongsTo(players, { foreignKey: 'id' })
 
 app.get('/players', async (req, res) => {
 	try {
@@ -25,6 +27,15 @@ app.get('/stats/:id/:year', async (req, res) => {
 				ID: id,
 				Year: year,
 			},
+			include: [
+				{
+					model: players,
+					required: true,
+					attributes: [],
+				},
+			],
+			raw: true,
+			attributes: ['*', 'player.player'],
 		})
 		const comps = await queryComps(id, year)
 
@@ -41,7 +52,8 @@ app.listen({ port: 5555 }, () => {
 
 async function queryComps(id, year) {
 	const comps = await sequelize.query(
-		`SELECT players.player,
+		`SELECT players.id,
+          players.player,
           stats.year,
           stats.pts,
           stats.mp,
