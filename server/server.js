@@ -3,6 +3,7 @@ const { players, stats, sequelize } = require('./models')
 const cors = require('cors')
 
 const app = express()
+app.use(cors())
 
 players.hasMany(stats, { foreignKey: 'id' })
 stats.belongsTo(players, { foreignKey: 'id' })
@@ -17,16 +18,15 @@ app.get('/players', async (req, res) => {
 	}
 })
 
-app.get('/stats/:id/:year', async (req, res) => {
+app.get('/player/:id/:year?', cors(), async (req, res) => {
 	const id = req.params.id
 	const year = req.params.year
 
+	// sequelize query with optional year parameter
+	const where = year ? { ID: id, year: year } : { ID: id }
 	try {
 		const player = await stats.findAll({
-			where: {
-				ID: id,
-				Year: year,
-			},
+			where: where,
 			include: [
 				{
 					model: players,
@@ -37,9 +37,20 @@ app.get('/stats/:id/:year', async (req, res) => {
 			raw: true,
 			attributes: ['*', 'player.player'],
 		})
-		const comps = await queryComps(id, year)
 
-		res.send({ player, comps })
+		res.send(player)
+	} catch (e) {
+		console.log(e)
+		res.status(500).json(e)
+	}
+})
+app.get('/comps/:id/:year', cors(), async (req, res) => {
+	const id = req.params.id
+	const year = req.params.year
+
+	try {
+		const comps = await queryComps(id, year)
+		res.send(comps)
 	} catch (e) {
 		console.log(e)
 		res.status(500).json(e)
@@ -54,6 +65,8 @@ async function queryComps(id, year) {
 	const comps = await sequelize.query(
 		`SELECT players.id,
           players.player,
+					stats.team,
+					stats.pos,
           stats.year,
           stats.pts,
           stats.mp,

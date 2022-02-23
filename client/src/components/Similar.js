@@ -1,53 +1,72 @@
-// material ui card
-// avatar with text to the right
-
-import { Card, Box, CardMedia, Grid } from '@mui/material'
+import { Divider, Grid } from '@mui/material'
 import { Typography } from '@mui/material'
-import {
-	createTheme,
-	ThemeProvider,
-	responsiveFontSizes,
-} from '@mui/material/styles'
 import '../index.css'
 import React from 'react'
-const NBA = require('nba')
 
-const theme = createTheme({
-	components: {
-		typography: {
-			flexGrow: 1,
-			textAlign: 'center',
-		},
-	},
-})
+const Similar = (props) => {
+	const [comps, setComps] = React.useState([])
 
-const Similar = (player) => {
+	const fetchComps = async () => {
+		const response = await fetch(
+			`http://localhost:5555/comps/${props.id}/${props.year}`
+		)
+		const data = await response.json()
+
+		setComps(data)
+	}
+
+	React.useEffect(() => {
+		fetchComps()
+	}, [])
+
 	return (
-		<Grid container alignItems="center" justifyContent="center" align="center">
-			<Grid item xs={4}>
-				<Typography variant="h4">{'Ja Morant'}</Typography>
-				<Typography variant="body1">{'2017 | MEM'}</Typography>
-			</Grid>
-
-			<Grid item xs={2} alignItems="center" justifyContent="center">
-				<Typography variant="h4">{'26.4'}</Typography>
-				<Typography variant="p">{'pts'}</Typography>
-			</Grid>
-			<Grid item xs={2} alignItems="center" justifyContent="center">
-				<Typography variant="h4">{'5.8'}</Typography>
-				<Typography variant="p">{'rbs'}</Typography>
-			</Grid>
-			<Grid item xs={2} alignItems="center" justifyContent="center">
-				<Typography variant="h4">{'7.8'}</Typography>
-				<Typography variant="p">{'ast'}</Typography>
-			</Grid>
-			<Grid item xs={2} alignItems="center" justifyContent="center">
-				<Typography variant="h4" align="center">
-					{'20.8'}
-				</Typography>
-				<Typography variant="body1">{'ws'}</Typography>
-			</Grid>
-		</Grid>
+		<>
+			<Divider />
+			{comps.map((p, index) => (
+				<div key={index}>
+					<Grid
+						container
+						alignItems="center"
+						justifyContent="center"
+						align="center"
+					>
+						<Grid item xs={4.5}>
+							<Typography variant="h4" align="left">
+								{p.player}
+							</Typography>
+							<Typography variant="body1" align="left">
+								{p.year + ' | ' + p.team + ' | ' + p.pos}
+							</Typography>
+						</Grid>
+						<Grid item xs={1.5}>
+							<Typography variant="h4">
+								{(p.distance * 100)?.toFixed(0) + '%'}
+							</Typography>
+							<Typography variant="body1">{'similar'}</Typography>
+						</Grid>
+						<Grid item xs={1.5}>
+							<Typography variant="h4">{p.pts?.toFixed(1)}</Typography>
+							<Typography variant="body1">{'pts'}</Typography>
+						</Grid>
+						<Grid item xs={1.5}>
+							<Typography variant="h4">{p.trb?.toFixed(1)}</Typography>
+							<Typography variant="body1">{'trb'}</Typography>
+						</Grid>
+						<Grid item xs={1.5}>
+							<Typography variant="h4">{p.ast?.toFixed(1)}</Typography>
+							<Typography variant="body1">{'ast'}</Typography>
+						</Grid>
+						<Grid item xs={1.5}>
+							<Typography variant="h4" align="center">
+								{p.WS?.toFixed(1)}
+							</Typography>
+							<Typography variant="body1">{'ws'}</Typography>
+						</Grid>
+					</Grid>
+					<Divider />
+				</div>
+			))}
+		</>
 	)
 }
 export default Similar

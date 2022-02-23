@@ -1,19 +1,33 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import './index.css'
+import Search from './pages/Search'
+import {
+	ThemeProvider,
+	createTheme,
+	responsiveFontSizes,
+} from '@mui/material/styles'
+import { BrowserRouter, Route, Link, useParams, Routes } from 'react-router-dom'
 import Landing from './pages/Landing'
-import { createTheme } from '@mui/system'
-import { ThemeProvider } from '@emotion/react'
 
-const numberFont = createTheme({
+let theme = createTheme({
 	typography: {
 		fontFamily: 'DM Serif Display',
 	},
 })
 
+theme = responsiveFontSizes(theme)
+
 ReactDOM.render(
 	<React.StrictMode>
-		<Landing />
+		<ThemeProvider theme={theme}>
+			<BrowserRouter>
+				<Routes>
+					<Route path="/" element={<Landing />} />
+					<Route path=":id/:year" element={<Search />} />
+				</Routes>
+			</BrowserRouter>
+		</ThemeProvider>
 	</React.StrictMode>,
 	document.getElementById('root')
 )
